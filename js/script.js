@@ -201,71 +201,59 @@ function playMusic(track, pause = false) {
   }
   syncIcons();
 }
-
-// Display albums
+// Display album cards using albums.json (GitHub Pages safe)
 async function displayAlbums() {
   const cardContainer = document.querySelector(".cardContainer");
   cardContainer.innerHTML = "Loading albums...";
 
   try {
-    const res = await fetch("songs/");
-    const html = await res.text();
+    const res = await fetch("songs/albums.json");
+    const data = await res.json();
 
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = html;
-
-    const anchors = Array.from(tempDiv.getElementsByTagName("a"));
     cardContainer.innerHTML = "";
 
-    for (let a of anchors) {
-      if (a.href.includes("/songs/") && !a.href.includes(".htaccess")) {
-        const parts = a.href.split("/").filter(Boolean);
-        const folder = parts[parts.length - 1];
+    for (const folder of data.albums) {
+      // Try to load metadata
+      let meta = { title: folder, description: "Playlist" };
+      try {
+        const infoRes = await fetch(`songs/${folder}/info.json`);
+        meta = await infoRes.json();
+      } catch {}
 
-        let meta = { title: folder, description: "Playlist" };
+      const card = document.createElement("div");
+      card.className = "card";
+      card.setAttribute("data-folder", folder);
+      card.innerHTML = `
+        <div class="play">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 20V4L19 12L5 20Z" stroke="#141B34" fill="#000" stroke-width="1.5"
+                    stroke-linejoin="round" />
+            </svg>
+        </div>
+        <img src="songs/${folder}/cover.jpg" alt="${meta.title}">
+        <h2>${meta.title}</h2>
+        <p>${meta.description}</p>
+      `;
 
-        try {
-          const infoRes = await fetch(`songs/${folder}/info.json`);
-          meta = await infoRes.json();
-        } catch (err) {
-          console.warn(`No info.json for folder: ${folder}`);
+      card.addEventListener("click", async (e) => {
+        const folderName = e.currentTarget.getAttribute("data-folder");
+        const fullFolder = `songs/${folderName}`;
+        const s = await getSongs(fullFolder);
+        if (s.length > 0) {
+          currentIndex = 0;
+          playMusic(s[0]);
         }
+      });
 
-        const card = document.createElement("div");
-        card.className = "card";
-        card.setAttribute("data-folder", folder);
-        card.innerHTML = `
-          <div class="play">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 20V4L19 12L5 20Z" stroke="#141B34" fill="#000" stroke-width="1.5"
-                      stroke-linejoin="round" />
-              </svg>
-          </div>
-          <img src="songs/${folder}/cover.jpg" alt="${meta.title}">
-          <h2>${meta.title}</h2>
-          <p>${meta.description}</p>
-        `;
-
-        card.addEventListener("click", async (e) => {
-          const folderName = e.currentTarget.getAttribute("data-folder");
-          const fullFolder = `songs/${folderName}`;
-          const s = await getSongs(fullFolder);
-          if (s.length > 0) {
-            currentIndex = 0;
-            playMusic(s[0]);
-          }
-        });
-
-        cardContainer.appendChild(card);
-      }
+      cardContainer.appendChild(card);
     }
 
-    if (!cardContainer.innerHTML.trim()) {
+    if (!data.albums || data.albums.length === 0) {
       cardContainer.innerHTML = "No albums found in songs/ folder.";
     }
   } catch (err) {
-    console.error("Error displaying albums:", err);
+    console.error("Error loading albums:", err);
     cardContainer.innerHTML = "Failed to load albums.";
   }
 }
