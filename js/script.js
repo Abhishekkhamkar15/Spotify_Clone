@@ -126,42 +126,30 @@ function setupAuth() {
 }
 
 // Load all songs from a given folder (e.g. "songs/ncs")
+// Load all songs from a given folder (GitHub Pages compatible)
 async function getSongs(folder) {
   currFolder = folder;
   const songListUL = document.querySelector(".songList ul");
   songListUL.innerHTML = "Loading songs...";
 
   try {
-    const res = await fetch(`${folder}/`);
-    const html = await res.text();
+    const res = await fetch(`${folder}/songs.json`);
+    const data = await res.json();
+    songs = data.songs || [];
 
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = html;
-
-    const anchors = Array.from(tempDiv.getElementsByTagName("a"));
-    songs = [];
-
-    anchors.forEach((a) => {
-      if (a.href.endsWith(".mp3")) {
-        const parts = a.href.split(`${folder}/`);
-        const fileName = parts[1];
-        if (fileName) songs.push(fileName);
-      }
-    });
-
+    // Build visible song list
     songListUL.innerHTML = "";
     songs.forEach((songName, index) => {
       const li = document.createElement("li");
       li.innerHTML = `
         <div class="info">
-            <div>${decodeURI(songName)}</div>
+          <div>${decodeURI(songName)}</div>
         </div>
         <div class="playnow">
-            <img class="song-icon" width="18" src="img/play.svg" alt="play">
-            <span>Play</span>
+          <img class="song-icon" width="18" src="img/play.svg" alt="play">
+          <span>Play</span>
         </div>
       `;
-
       li.addEventListener("click", () => {
         if (currentSong.src.includes(songName) && !currentSong.paused) {
           currentSong.pause();
@@ -171,7 +159,6 @@ async function getSongs(folder) {
         }
         syncIcons();
       });
-
       songListUL.appendChild(li);
     });
 
@@ -186,6 +173,7 @@ async function getSongs(folder) {
     return [];
   }
 }
+
 
 // Play a specific track
 function playMusic(track, pause = false) {
