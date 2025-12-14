@@ -6,7 +6,7 @@ A visually stunning **Spotify Clone** built using **HTML, CSS, and JavaScript** 
 
 ## 🚀 Live Demo
 🔗 **[View Project Here](https://abhishekkhamkar15.github.io/Spotify_Clone/)** 
-     vrecel :- https://spotify-clone-tau-lake.vercel.app/
+     vercel :- https://spotify-clone-tau-lake.vercel.app/
 
 ---
 
