@@ -125,7 +125,6 @@ function setupAuth() {
   }
 }
 
-// Load all songs from a given folder (e.g. "songs/ncs")
 // Load all songs from a given folder (GitHub Pages compatible)
 async function getSongs(folder) {
   currFolder = folder;
@@ -174,7 +173,6 @@ async function getSongs(folder) {
   }
 }
 
-
 // Play a specific track
 function playMusic(track, pause = false) {
   if (!currFolder) return;
@@ -189,6 +187,7 @@ function playMusic(track, pause = false) {
   }
   syncIcons();
 }
+
 // Display album cards using albums.json (GitHub Pages safe)
 async function displayAlbums() {
   const cardContainer = document.querySelector(".cardContainer");
